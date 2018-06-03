@@ -97,6 +97,10 @@ struct BoardState {
     next_move = OTHER(next_move);
   }
 
+  void pass() {
+    next_move = OTHER(next_move);
+  }
+
   vector<pair<int, int>> moves() {
     vector<pair<int, int>> m;
   
@@ -168,42 +172,76 @@ struct BoardState {
   }
 };
 
+bool random_move(BoardState *state) {
+  auto valid_moves = state->moves();
+
+  if (valid_moves.size() == 0) {
+    state->pass();
+    return false;
+  }
+
+  auto move = valid_moves[rand() % valid_moves.size()];
+
+  state->apply(move);
+
+  return true;
+}
+
+bool io_move(BoardState *state) {
+  auto valid_moves = state->moves();
+
+  if (valid_moves.size() == 0) {
+    state->pass();
+    return false;
+  }
+
+  while (true) {
+    string cmd;
+    cin >> cmd;
+
+    if (cmd.size() != 2) {
+      cout << "bad command" << endl;
+      continue;
+    }        
+
+    int row = int(cmd[1] - '1');
+    int col = int(cmd[0] - 'a');
+
+    if (!BOUNDS(row, col)) {
+      cout << "out of bounds" << endl;
+      continue;
+    }
+
+    pair<int,int> move(row, col);
+
+    if (find(valid_moves.begin(), valid_moves.end(), move) == valid_moves.end()) {
+      cout << "invalid move" << endl;
+      continue;
+    }
+
+    state->apply(move);
+    return true;
+  }
+}
+
 int main(int argc, char ** argv) {
 
   BoardState state;
+
+  bool (*player_a)(BoardState *state) = *io_move;
+  bool (*player_b)(BoardState *state) = *random_move;
+
+  bool passed = false;
 
   while (true) {
 
     state.print();
 
-    auto valid_moves = state.moves();
+    bool pass = !(*player_a)(&state);
 
-    while (true) {
-      string cmd;
-      cin >> cmd;
-
-      if (cmd.size() != 2) {
-        cout << "command" << endl;
-        continue;
-      }        
-
-      int row = int(cmd[1] - '1');
-      int col = int(cmd[0] - 'a');
-
-      if (!BOUNDS(row, col)) {
-        cout << "bounds" << endl;
-        continue;
-      }
-
-      pair<int,int> move(row, col);
-
-      if (find(valid_moves.begin(), valid_moves.end(), move) == valid_moves.end()) {
-        cout << "move" << endl;
-        continue;
-      }
-
-      state.apply(move);
-      break;
-    }
+    if (pass && passed) break;
+    passed = pass;
+    
+    swap(player_a, player_b);
   }
 }
