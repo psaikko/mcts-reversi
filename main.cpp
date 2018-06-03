@@ -54,6 +54,11 @@ struct BoardState {
     board[4][4] = WHITE;
   }
 
+  BoardState(const BoardState & other) {
+    next_move = other.next_move;
+    copy(*other.board, other.board[7]+8, *board);
+  }
+
   void apply(pair<int,int> move) {
     board[move.first][move.second] = next_move;
 
@@ -155,9 +160,9 @@ struct BoardState {
       printf("%d", i+1);
       for (int j = 0; j < 8; ++j) {
         if (board[i][j] == WHITE)
-          printf("#");
-        else if (board[i][j] == BLACK)
           printf("O");
+        else if (board[i][j] == BLACK)
+          printf("#");
         else {
           pair<int,int> x(i, j);
 
@@ -170,7 +175,45 @@ struct BoardState {
       printf("\n");
     }
   }
+
+  int score(int player) {
+    int s = 0;
+    for (int i = 0; i < 8; ++i)
+      for (int j = 0; j < 8; ++j)
+        if (board[i][j] == player)
+          ++s;
+    return s;
+  }
 };
+
+bool greedy_move(BoardState *state) {
+  auto valid_moves = state->moves();
+
+  if (valid_moves.size() == 0) {
+    state->pass();
+    return false;
+  }
+
+  int player = state->next_move;
+
+  pair<int,int> best_move;
+  int best_score = -1;
+
+  for (auto move : valid_moves) {
+    BoardState next_state(*state);
+    next_state.apply(move);
+    int score = next_state.score(player);
+
+    if (score > best_score) {
+      best_move = move;
+      best_score = score;
+    }
+  }
+
+  state->apply(best_move);
+
+  return true;
+}
 
 bool random_move(BoardState *state) {
   auto valid_moves = state->moves();
@@ -226,22 +269,39 @@ bool io_move(BoardState *state) {
 
 int main(int argc, char ** argv) {
 
-  BoardState state;
+  srand(time(0));
 
-  bool (*player_a)(BoardState *state) = *io_move;
-  bool (*player_b)(BoardState *state) = *random_move;
+  int w_wins = 0;
+  int b_wins = 0;
 
-  bool passed = false;
+  for (int i = 0; i < 10000; ++i) {
 
-  while (true) {
+    BoardState state;
 
-    state.print();
+    bool (*player_a)(BoardState *state) = *greedy_move; // black
+    bool (*player_b)(BoardState *state) = *random_move;
 
-    bool pass = !(*player_a)(&state);
+    bool passed = false;
 
-    if (pass && passed) break;
-    passed = pass;
-    
-    swap(player_a, player_b);
+    while (true) {
+
+      //state.print();
+
+      bool pass = !(*player_a)(&state);
+
+      if (pass && passed) break;
+      passed = pass;
+      
+      swap(player_a, player_b);
+    }
+
+    int w_score = state.score(WHITE);
+    int b_score = state.score(BLACK);
+
+    if (w_score > b_score) w_wins++;
+    if (w_score < b_score) b_wins++;
   }
+
+  cout << "W " << w_wins << endl;
+  cout << "B " << b_wins << endl;
 }
