@@ -153,26 +153,26 @@ struct BoardState {
 
     printf(" ");
     for (int i = 0; i < 8; ++i)
-      printf("%c", 'a' + i);
+      printf(" %c", 'a' + i);
     printf("\n");
 
     for (int i = 0; i < 8; ++i) {
       printf("%d", i+1);
       for (int j = 0; j < 8; ++j) {
         if (board[i][j] == WHITE)
-          printf("O");
+          printf(" #");
         else if (board[i][j] == BLACK)
-          printf("#");
+          printf(" O");
         else {
           pair<int,int> x(i, j);
 
           if (find(valid_moves.begin(), valid_moves.end(), x) != valid_moves.end())
-            printf("_");
+            printf(" _");
           else 
-            printf(" ");
+            printf("  ");
         }
       }
-      printf("\n");
+      printf("\n\n");
     }
   }
 
@@ -185,6 +185,102 @@ struct BoardState {
     return s;
   }
 };
+
+int min_move(BoardState *state, int d, int player);
+
+int max_move(BoardState *state, int d, int player) {
+  auto valid_moves = state->moves();
+
+  if (d == 0) {
+    return state->score(player);
+  }
+
+  if (valid_moves.size() == 0) {
+    BoardState next_state(*state);
+    next_state.pass();
+    return max_move(&next_state, d - 1, player);
+  }
+
+  int best_score = 0;
+  pair<int,int> best_move;
+
+  for (auto move : valid_moves) {
+    BoardState next_state(*state);
+    next_state.apply(move);
+
+    int score = min_move(&next_state, d - 1, player);
+
+    if (score > best_score) {
+      best_move = move;
+      best_score = score;
+    }
+  }
+
+  return best_score;
+}
+
+int min_move(BoardState *state, int d, int player) {
+  auto valid_moves = state->moves();
+
+  if (d == 0) {
+    return state->score(player);
+  }
+
+  if (valid_moves.size() == 0) {
+    BoardState next_state(*state);
+    next_state.pass();
+    return max_move(&next_state, d - 1, player);
+  }
+
+  int best_score = numeric_limits<int>::max();
+  pair<int,int> best_move;
+
+  for (auto move : valid_moves) {
+    BoardState next_state(*state);
+    next_state.apply(move);
+
+    int score = max_move(&next_state, d - 1, player);
+
+    if (score < best_score) {
+      best_move = move;
+      best_score = score;
+    }
+  }
+
+  return best_score;
+}
+
+#define PLY_DEPTH 2
+
+bool minimax_move(BoardState *state) {
+  auto valid_moves = state->moves();
+
+  if (valid_moves.size() == 0) {
+    //printf("pass\n");
+    state->pass();
+    return false;
+  }
+
+  int player = state->next_move;
+  int best_score = 0;
+  pair<int,int> best_move;
+
+  for (auto move : valid_moves) {
+    BoardState next_state(*state);
+    next_state.apply(move);
+
+    int score = min_move(&next_state, PLY_DEPTH, player);
+
+    if (score > best_score) {
+      best_move = move;
+      best_score = score;
+    }
+  }
+
+  state->apply(best_move);
+
+  return true;
+}
 
 bool greedy_move(BoardState *state) {
   auto valid_moves = state->moves();
@@ -231,6 +327,9 @@ bool random_move(BoardState *state) {
 }
 
 bool io_move(BoardState *state) {
+
+  state->print();
+
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
@@ -274,18 +373,16 @@ int main(int argc, char ** argv) {
   int w_wins = 0;
   int b_wins = 0;
 
-  for (int i = 0; i < 10000; ++i) {
+  for (int i = 0; i < 100; ++i) {
 
     BoardState state;
 
-    bool (*player_a)(BoardState *state) = *greedy_move; // black
-    bool (*player_b)(BoardState *state) = *random_move;
+    bool (*player_a)(BoardState *state) = *random_move; // black
+    bool (*player_b)(BoardState *state) = *minimax_move;
 
     bool passed = false;
 
     while (true) {
-
-      //state.print();
 
       bool pass = !(*player_a)(&state);
 
