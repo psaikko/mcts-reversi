@@ -154,15 +154,15 @@ struct BoardState {
     printf(" ");
     for (int i = 0; i < 8; ++i)
       printf(" %c", 'a' + i);
-    printf("\n");
+    printf("\n\n");
 
     for (int i = 0; i < 8; ++i) {
       printf("%d", i+1);
       for (int j = 0; j < 8; ++j) {
         if (board[i][j] == WHITE)
-          printf(" #");
+          printf(" \u25CB");
         else if (board[i][j] == BLACK)
-          printf(" O");
+          printf(" \u25CF");
         else {
           pair<int,int> x(i, j);
 
@@ -250,7 +250,7 @@ int min_move(BoardState *state, int d, int player) {
   return best_score;
 }
 
-#define PLY_DEPTH 2
+#define PLY_DEPTH 5
 
 bool minimax_move(BoardState *state) {
   auto valid_moves = state->moves();
@@ -377,7 +377,7 @@ int main(int argc, char ** argv) {
 
     BoardState state;
 
-    bool (*player_a)(BoardState *state) = *random_move; // black
+    bool (*player_a)(BoardState *state) = *io_move; // black
     bool (*player_b)(BoardState *state) = *minimax_move;
 
     bool passed = false;
@@ -397,6 +397,8 @@ int main(int argc, char ** argv) {
 
     if (w_score > b_score) w_wins++;
     if (w_score < b_score) b_wins++;
+
+    cout << w_score << " " << b_score << endl;
   }
 
   cout << "W " << w_wins << endl;
