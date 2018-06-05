@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "util.h"
 
 struct BoardState {
@@ -128,7 +130,7 @@ struct BoardState {
         else {
           Point x(i, j);
 
-          if (find(valid_moves.begin(), valid_moves.end(), x) != valid_moves.end())
+          if (std::find(valid_moves.begin(), valid_moves.end(), x) != valid_moves.end())
             printf(" _");
           else 
             printf(" .");
