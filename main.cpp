@@ -7,7 +7,7 @@
 #include "util.h"
 #include "minimax.h"
 
-#define PLY_DEPTH 5
+#define PLY_DEPTH 3
 #define RANDOM_GAMES 10
 
 using namespace std;
@@ -189,7 +189,7 @@ int main(int argc, char ** argv) {
   move_func minimax_sampling = bind(minimax_move, _1, eval_sampling_10, PLY_DEPTH);
   move_func minimax_pieces = bind(minimax_move, _1, eval_pieces, PLY_DEPTH);
 
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 100; ++i) {
 
     BoardState state;
 
