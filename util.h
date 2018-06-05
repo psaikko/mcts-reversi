@@ -60,3 +60,34 @@ std::vector<Point> adjacent(int y, int x) {
     return { {y - 1, x}, {y - 1, x - 1}, {y, x - 1} };
 
 }
+
+/*
+std::vector<Point> adjacent(int y, int x) {
+  std::vector<Point> adj;
+  adj.reserve(8);
+
+  if (y > 0) {
+    adj.emplace_back(y - 1, x);
+    if (x > 0)
+      adj.emplace_back(y - 1, x - 1);
+    if (x < 7)
+      adj.emplace_back(y - 1, x + 1);
+  } 
+
+  if (y < 7) {
+    adj.emplace_back(y + 1, x);
+    if (x > 0)
+      adj.emplace_back(y + 1, x - 1);
+    if (x < 7)
+      adj.emplace_back(y + 1, x + 1);
+  }
+
+  if (x > 0)
+    adj.emplace_back(y, x - 1);
+
+  if (x < 7)
+    adj.emplace_back(y, x + 1);
+
+  return std::move(adj);
+}
+*/
