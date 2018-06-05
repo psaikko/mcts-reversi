@@ -250,7 +250,8 @@ int min_move(BoardState *state, int d, int player) {
   return best_score;
 }
 
-#define PLY_DEPTH 5
+#define PLY_DEPTH 3
+#define RANDOM_GAMES 10
 
 bool minimax_move(BoardState *state) {
   auto valid_moves = state->moves();
@@ -366,6 +367,64 @@ bool io_move(BoardState *state) {
   }
 }
 
+int simulate_random_game(BoardState *start_state) {
+
+  BoardState state(*start_state);
+
+  bool passed = false;
+
+  while (true) {
+    bool pass = !random_move(&state);
+
+    if (pass && passed) break;
+    passed = pass;
+  }
+
+  int w_score = state.score(WHITE);
+  int b_score = state.score(BLACK);
+
+  //printf("simulated %d-%d\n", w_score, b_score);
+
+  if (w_score > b_score) return WHITE;
+  if (w_score < b_score) return BLACK;
+  return EMPTY;
+}
+
+bool sampling_move(BoardState *state) {
+  auto valid_moves = state->moves();
+
+  if (valid_moves.size() == 0) {
+    state->pass();
+    return false;
+  }
+
+  int player = state->next_move;
+  int best_score = -1;
+  pair<int,int> best_move;
+
+  for (auto move : valid_moves) {
+    BoardState next_state(*state);
+    next_state.apply(move);
+
+    int score = 0;
+
+    for (int i = 0; i < RANDOM_GAMES; ++i) {
+      if (simulate_random_game(&next_state) == player) {
+        score++;
+      }
+    }
+
+    if (score > best_score) {
+      best_move = move;
+      best_score = score;
+    }
+  }
+
+  state->apply(best_move);
+
+  return true;
+}
+
 int main(int argc, char ** argv) {
 
   srand(time(0));
@@ -373,12 +432,12 @@ int main(int argc, char ** argv) {
   int w_wins = 0;
   int b_wins = 0;
 
-  for (int i = 0; i < 100; ++i) {
+  for (int i = 0; i < 10; ++i) {
 
     BoardState state;
 
-    bool (*player_a)(BoardState *state) = *io_move; // black
-    bool (*player_b)(BoardState *state) = *minimax_move;
+    bool (*player_a)(BoardState *state) = *minimax_move; // black
+    bool (*player_b)(BoardState *state) = *random_move;
 
     bool passed = false;
 
