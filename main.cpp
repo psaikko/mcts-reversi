@@ -1,10 +1,14 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
+#include <functional>
 
 #define EMPTY 0
 #define BLACK 1
 #define WHITE 2
+
+#define PLY_DEPTH 2
+#define RANDOM_GAMES 10
 
 #define OTHER(p) ((p == WHITE) ? BLACK : WHITE)
 
@@ -12,8 +16,16 @@
 
 using namespace std;
 
-vector<pair<int, int>> adjacent(int y, int x) {
-  vector<pair<int, int>> adj;
+struct BoardState;
+
+typedef pair<int,int> Point;
+//typedef int eval_func(BoardState*, int);
+typedef std::function<int(BoardState*, int)> eval_func;
+//typedef bool move_func(BoardState*);
+typedef std::function<bool(BoardState*)> move_func;
+
+vector<Point> adjacent(int y, int x) {
+  vector<Point> adj;
 
   if (y > 1) {
     adj.emplace_back(y - 1, x);
@@ -59,7 +71,7 @@ struct BoardState {
     copy(*other.board, other.board[7]+8, *board);
   }
 
-  void apply(pair<int,int> move) {
+  void apply(Point move) {
     board[move.first][move.second] = next_move;
 
     for (auto adj_p : adjacent(move.first, move.second)) {
@@ -106,8 +118,8 @@ struct BoardState {
     next_move = OTHER(next_move);
   }
 
-  vector<pair<int, int>> moves() {
-    vector<pair<int, int>> m;
+  vector<Point> moves() {
+    vector<Point> m;
   
     for (int i = 0; i < 8; ++i) {
       for (int j = 0; j < 8; ++j) {
@@ -164,51 +176,63 @@ struct BoardState {
         else if (board[i][j] == BLACK)
           printf(" \u25CF");
         else {
-          pair<int,int> x(i, j);
+          Point x(i, j);
 
           if (find(valid_moves.begin(), valid_moves.end(), x) != valid_moves.end())
             printf(" _");
           else 
-            printf("  ");
+            printf(" .");
         }
       }
       printf("\n\n");
     }
   }
-
-  int score(int player) {
-    int s = 0;
-    for (int i = 0; i < 8; ++i)
-      for (int j = 0; j < 8; ++j)
-        if (board[i][j] == player)
-          ++s;
-    return s;
-  }
 };
 
-int min_move(BoardState *state, int d, int player, int alpha);
+int eval_pieces(BoardState *state, int player) {
+  int s = 0;
+  for (int i = 0; i < 8; ++i)
+    for (int j = 0; j < 8; ++j)
+      if (state->board[i][j] == player)
+        ++s;
+  return s;
+}
 
-int max_move(BoardState *state, int d, int player, int beta) {
+int simulate_random_game(BoardState *start_state);
+
+int eval_sampling(BoardState *state, int player, int samples) {
+  int s = 0;
+  for (int i = 0; i < samples; ++i) {
+    if (simulate_random_game(state) == player) {
+      s++;
+    }
+  }
+  return s;
+}
+
+int min_move(BoardState *state, int d, int player, int alpha, eval_func eval);
+
+int max_move(BoardState *state, int d, int player, int beta, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (d == 0) {
-    return state->score(player);
+    return eval(state, player);
   }
 
   if (valid_moves.size() == 0) {
     BoardState next_state(*state);
     next_state.pass();
-    return min_move(&next_state, d - 1, player, numeric_limits<int>::min());
+    return min_move(&next_state, d - 1, player, numeric_limits<int>::min(), eval);
   }
 
   int best_score = 0;
-  pair<int,int> best_move;
+  Point best_move;
 
   for (auto move : valid_moves) {
     BoardState next_state(*state);
     next_state.apply(move);
 
-    int score = min_move(&next_state, d - 1, player, best_score);
+    int score = min_move(&next_state, d - 1, player, best_score, eval);
 
     if (score > beta) {
       best_score = beta;
@@ -224,27 +248,27 @@ int max_move(BoardState *state, int d, int player, int beta) {
   return best_score;
 }
 
-int min_move(BoardState *state, int d, int player, int alpha) {
+int min_move(BoardState *state, int d, int player, int alpha, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (d == 0) {
-    return state->score(player);
+    return eval(state, player);
   }
 
   if (valid_moves.size() == 0) {
     BoardState next_state(*state);
     next_state.pass();
-    return max_move(&next_state, d - 1, player, numeric_limits<int>::max());
+    return max_move(&next_state, d - 1, player, numeric_limits<int>::max(), eval);
   }
 
   int best_score = numeric_limits<int>::max();
-  pair<int,int> best_move;
+  Point best_move;
 
   for (auto move : valid_moves) {
     BoardState next_state(*state);
     next_state.apply(move);
 
-    int score = max_move(&next_state, d - 1, player, best_score);
+    int score = max_move(&next_state, d - 1, player, best_score, eval);
 
     if (score < alpha) {
       best_score = alpha;
@@ -260,10 +284,7 @@ int min_move(BoardState *state, int d, int player, int alpha) {
   return best_score;
 }
 
-#define PLY_DEPTH 5
-#define RANDOM_GAMES 10
-
-bool minimax_move(BoardState *state) {
+bool minimax_move(BoardState *state, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
@@ -274,13 +295,13 @@ bool minimax_move(BoardState *state) {
 
   int player = state->next_move;
   int best_score = 0;
-  pair<int,int> best_move;
+  Point best_move;
 
   for (auto move : valid_moves) {
     BoardState next_state(*state);
     next_state.apply(move);
 
-    int score = min_move(&next_state, PLY_DEPTH, player, best_score);
+    int score = min_move(&next_state, PLY_DEPTH, player, best_score, eval);
 
     if (score > best_score) {
       best_move = move;
@@ -293,7 +314,7 @@ bool minimax_move(BoardState *state) {
   return true;
 }
 
-bool greedy_move(BoardState *state) {
+bool greedy_move(BoardState *state, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
@@ -303,13 +324,13 @@ bool greedy_move(BoardState *state) {
 
   int player = state->next_move;
 
-  pair<int,int> best_move;
+  Point best_move;
   int best_score = -1;
 
   for (auto move : valid_moves) {
     BoardState next_state(*state);
     next_state.apply(move);
-    int score = next_state.score(player);
+    int score = eval(&next_state, player);
 
     if (score > best_score) {
       best_move = move;
@@ -365,7 +386,7 @@ bool io_move(BoardState *state) {
       continue;
     }
 
-    pair<int,int> move(row, col);
+    Point move(row, col);
 
     if (find(valid_moves.begin(), valid_moves.end(), move) == valid_moves.end()) {
       cout << "invalid move" << endl;
@@ -373,6 +394,9 @@ bool io_move(BoardState *state) {
     }
 
     state->apply(move);
+
+    state->print();
+
     return true;
   }
 }
@@ -390,10 +414,10 @@ int simulate_random_game(BoardState *start_state) {
     passed = pass;
   }
 
-  int w_score = state.score(WHITE);
-  int b_score = state.score(BLACK);
+  int w_score = eval_pieces(&state, WHITE);
+  int b_score = eval_pieces(&state, BLACK);
 
-  //printf("simulated %d-%d\n", w_score, b_score);
+  // printf("simulated %d-%d\n", w_score, b_score);
 
   if (w_score > b_score) return WHITE;
   if (w_score < b_score) return BLACK;
@@ -410,19 +434,13 @@ bool sampling_move(BoardState *state) {
 
   int player = state->next_move;
   int best_score = -1;
-  pair<int,int> best_move;
+  Point best_move;
 
   for (auto move : valid_moves) {
     BoardState next_state(*state);
     next_state.apply(move);
 
-    int score = 0;
-
-    for (int i = 0; i < RANDOM_GAMES; ++i) {
-      if (simulate_random_game(&next_state) == player) {
-        score++;
-      }
-    }
+    int score = eval_sampling(&next_state, player, RANDOM_GAMES);
 
     if (score > best_score) {
       best_move = move;
@@ -437,23 +455,33 @@ bool sampling_move(BoardState *state) {
 
 int main(int argc, char ** argv) {
 
+  using namespace std::placeholders;
+
   srand(time(0));
 
   int w_wins = 0;
   int b_wins = 0;
 
-  for (int i = 0; i < 10; ++i) {
+  eval_func eval_sampling_10 = bind(eval_sampling, _1, _2, 10);
+
+  move_func greedy_sampling = bind(greedy_move, _1, eval_sampling_10);
+  move_func greedy_pieces = bind(greedy_move, _1, eval_pieces);
+
+  move_func minimax_sampling = bind(minimax_move, _1, eval_sampling_10);
+  move_func minimax_pieces = bind(minimax_move, _1, eval_pieces);
+
+  for (int i = 0; i < 1000; ++i) {
 
     BoardState state;
 
-    bool (*player_a)(BoardState *state) = *minimax_move; // black
-    bool (*player_b)(BoardState *state) = *sampling_move;
+    move_func player_a = minimax_pieces;   // black
+    move_func player_b = random_move;
 
     bool passed = false;
 
     while (true) {
 
-      bool pass = !(*player_a)(&state);
+      bool pass = !player_a(&state);
 
       if (pass && passed) break;
       passed = pass;
@@ -461,8 +489,8 @@ int main(int argc, char ** argv) {
       swap(player_a, player_b);
     }
 
-    int w_score = state.score(WHITE);
-    int b_score = state.score(BLACK);
+    int w_score = eval_pieces(&state, WHITE);
+    int b_score = eval_pieces(&state, BLACK);
 
     if (w_score > b_score) w_wins++;
     if (w_score < b_score) b_wins++;
