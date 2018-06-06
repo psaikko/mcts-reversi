@@ -12,6 +12,26 @@
 
 using namespace std;
 
+int winner(BoardState *terminal_state) {
+  assert(terminal_state->passed);
+
+  int w_score = 0;
+  int b_score = 0;
+
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 0; j < 8; ++j) {
+      if (terminal_state->board[i][j] == WHITE)
+        w_score++;
+      else if (terminal_state->board[i][j] == BLACK)
+        b_score++;
+    }
+  }
+
+  if (w_score > b_score) return WHITE;
+  if (w_score < b_score) return BLACK;
+  return EMPTY;
+}
+
 int simulate_random_game(BoardState *start_state) {
 
   BoardState state(*start_state);
@@ -25,23 +45,7 @@ int simulate_random_game(BoardState *start_state) {
     passed = pass;
   }
 
-  int w_score = 0;
-  int b_score = 0;
-
-  for (int i = 0; i < 8; ++i) {
-    for (int j = 0; j < 8; ++j) {
-      if (state.board[i][j] == WHITE)
-        w_score++;
-      else if (state.board[i][j] == BLACK)
-        b_score++;
-    }
-  }
-
-  // printf("simulated %d-%d\n", w_score, b_score);
-
-  if (w_score > b_score) return WHITE;
-  if (w_score < b_score) return BLACK;
-  return EMPTY;
+  return winner(&state);
 }
 
 int eval_pieces(BoardState *state, int player) {
@@ -68,7 +72,7 @@ int ucb1_move(BoardState *state, int n_trials) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
-    state->pass();
+    state->apply(PASS);
     return false;
   }
 
@@ -139,9 +143,11 @@ struct uct_node {
   vector<Point> valid_moves;
   vector<uct_node*> node_children;
 
+  uct_node* pass_node;
+
   BoardState *state;
 
-  uct_node(BoardState *state) : state(state) {
+  uct_node(BoardState *state) : state(state), pass_node(NULL) {
 
     ++ uct_nodes;
 
@@ -159,6 +165,7 @@ struct uct_node {
     delete state;
     for (auto child : node_children)
       if (child) delete child;
+    if (pass_node) delete pass_node;
   }
 
   Point get_best_move() {
@@ -190,8 +197,17 @@ struct uct_node {
     int j = -1;
 
     if (n_moves == 0) {
-      // kludge for dealing with passing
-      return simulate_random_game(state);
+      if (state->passed) {
+        return winner(state);
+      }
+
+      if (!pass_node) {
+        BoardState *pass_state = new BoardState(*state);
+        pass_state->apply(PASS);
+        pass_node = new uct_node(pass_state);
+      }
+
+      return pass_node->play();
     }
 
     if (n_visited < n_moves) {
@@ -243,7 +259,8 @@ bool uct_move(BoardState *state, int n_trials) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
-    state->pass();
+    printf("pass\n");
+    state->apply(PASS);
     return false;
   }
 
@@ -260,7 +277,7 @@ bool uct_move(BoardState *state, int n_trials) {
     Point move = root_node.get_best_move();
     state->apply(move);
   } else {
-    state->pass();
+    state->apply(PASS);
   }
 
   printf("UCT nodes %d visits %d rollouts %d\n", uct_nodes, uct_visits, uct_rollouts);
@@ -277,6 +294,7 @@ int main(int argc, char ** argv) {
   int w_wins = 0;
   int b_wins = 0;
 
+  eval_func eval_sampling_1 = bind(eval_sampling, _1, _2, 1);
   eval_func eval_sampling_10 = bind(eval_sampling, _1, _2, 10);
   eval_func eval_sampling_100 = bind(eval_sampling, _1, _2, 100);
   eval_func eval_sampling_1000 = bind(eval_sampling, _1, _2, 1000);
@@ -285,6 +303,7 @@ int main(int argc, char ** argv) {
   move_func greedy_sampling_100 = bind(greedy_move, _1, eval_sampling_100);
   move_func greedy_sampling_1000 = bind(greedy_move, _1, eval_sampling_1000);
 
+  move_func uct_move_10 = bind(uct_move, _1, 10);
   move_func uct_move_1000 = bind(uct_move, _1, 1000);
 
   move_func ucb1_move_10 = bind(ucb1_move, _1, 10);
@@ -306,6 +325,8 @@ int main(int argc, char ** argv) {
     bool passed = false;
 
     while (true) {
+
+      state.print();
 
       bool pass = !player_a(&state);
 

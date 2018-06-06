@@ -23,7 +23,7 @@ int max_move(BoardState *state, int d, int player, int beta, eval_func eval) {
 
   if (valid_moves.size() == 0) {
     BoardState next_state(*state);
-    next_state.pass();
+    next_state.apply(PASS);
     return min_move(&next_state, d - 1, player, std::numeric_limits<int>::min(), eval);
   }
 
@@ -63,7 +63,7 @@ int min_move(BoardState *state, int d, int player, int alpha, eval_func eval) {
 
   if (valid_moves.size() == 0) {
     BoardState next_state(*state);
-    next_state.pass();
+    next_state.apply(PASS);
     return max_move(&next_state, d - 1, player, std::numeric_limits<int>::max(), eval);
   }
 
@@ -99,13 +99,13 @@ bool minimax_move(BoardState *state, eval_func eval, int max_depth) {
   minimax_pruned = 0;
 
   if (valid_moves.size() == 0) {
-    //printf("pass\n");
-    state->pass();
+    printf("pass\n");
+    state->apply(PASS);
     return false;
   }
 
   int player = state->active_player;
-  int best_score = 0;
+  int best_score = -1;
   Point best_move;
 
   for (auto move : valid_moves) {
@@ -119,6 +119,8 @@ bool minimax_move(BoardState *state, eval_func eval, int max_depth) {
       best_score = score;
     }
   }
+
+  assert(best_score != -1);
 
   printf("Minimax %d nodes (%d pruned), %d leaves evaluated\n", minimax_nodes, minimax_pruned, minimax_leaves);
 

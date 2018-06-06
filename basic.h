@@ -10,7 +10,7 @@ bool greedy_move(BoardState *state, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
-    state->pass();
+    state->apply(PASS);
     return false;
   }
 
@@ -40,7 +40,7 @@ bool random_move(BoardState *state) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
-    state->pass();
+    state->apply(PASS);
     return false;
   }
 
@@ -58,7 +58,7 @@ bool io_move(BoardState *state) {
   auto valid_moves = state->moves();
 
   if (valid_moves.size() == 0) {
-    state->pass();
+    state->apply(PASS);
     return false;
   }
 

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <functional>
+#include <cassert>
 
 struct BoardState;
 
@@ -10,6 +11,8 @@ typedef std::pair<int,int> Point;
 typedef std::function<int(BoardState*, int)> eval_func;
 
 typedef std::function<bool(BoardState*)> move_func;
+
+const Point PASS = {-1,-1};
 
 #define EMPTY 0
 #define BLACK 1
