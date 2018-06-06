@@ -14,7 +14,7 @@ bool greedy_move(BoardState *state, eval_func eval) {
     return false;
   }
 
-  int player = state->next_move;
+  int player = state->active_player;
 
   Point best_move;
   int best_score = -1;

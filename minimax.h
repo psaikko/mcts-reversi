@@ -104,7 +104,7 @@ bool minimax_move(BoardState *state, eval_func eval, int max_depth) {
     return false;
   }
 
-  int player = state->next_move;
+  int player = state->active_player;
   int best_score = 0;
   Point best_move;
 

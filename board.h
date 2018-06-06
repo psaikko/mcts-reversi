@@ -7,9 +7,9 @@
 struct BoardState {
 
   int board[8][8];
-  int next_move;
+  int active_player;
 
-  BoardState() : next_move(BLACK) {
+  BoardState() : active_player(BLACK) {
     std::fill(*board, board[7]+8, 0);
 
     board[3][3] = WHITE;
@@ -19,18 +19,18 @@ struct BoardState {
   }
 
   BoardState(const BoardState & other) {
-    next_move = other.next_move;
+    active_player = other.active_player;
     std::copy(*other.board, other.board[7]+8, *board);
   }
 
   void apply(Point move) {
-    board[move.first][move.second] = next_move;
+    board[move.first][move.second] = active_player;
 
     for (auto adj_p : adjacent(move.first, move.second)) {
       int x = adj_p.second;
       int y = adj_p.first;
 
-      if (board[y][x] == OTHER(next_move)) {
+      if (board[y][x] == OTHER(active_player)) {
 
         int dx = x - move.second;
         int dy = y - move.first;
@@ -43,15 +43,15 @@ struct BoardState {
             break;
           }
 
-          if (board[y][x] == next_move) {
+          if (board[y][x] == active_player) {
             while (true) {
               x -= dx;
               y -= dy;
 
-              if (board[y][x] == next_move)
+              if (board[y][x] == active_player)
                 break;
 
-              board[y][x] = next_move;
+              board[y][x] = active_player;
             }
             break;
           }
@@ -63,11 +63,11 @@ struct BoardState {
       }
     }
 
-    next_move = OTHER(next_move);
+    active_player = OTHER(active_player);
   }
 
   void pass() {
-    next_move = OTHER(next_move);
+    active_player = OTHER(active_player);
   }
 
   std::vector<Point> moves() {
@@ -75,12 +75,12 @@ struct BoardState {
   
     for (int i = 0; i < 8; ++i) {
       for (int j = 0; j < 8; ++j) {
-        if (board[i][j] == next_move) {
+        if (board[i][j] == active_player) {
           for (auto adj_p : adjacent(i, j)) {
             int x = adj_p.second;
             int y = adj_p.first;
 
-            if (board[y][x] == OTHER(next_move)) {
+            if (board[y][x] == OTHER(active_player)) {
 
               int dx = x - j;
               int dy = y - i;
@@ -93,7 +93,7 @@ struct BoardState {
                   break;
                 }
 
-                if (board[y][x] == next_move) {
+                if (board[y][x] == active_player) {
                   break;
                 }
 
