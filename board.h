@@ -34,10 +34,7 @@ struct BoardState {
       assert(board[move.first][move.second] == EMPTY);
       board[move.first][move.second] = active_player;
 
-      for (auto adj_p : adjacent(move.first, move.second)) {
-        int x = adj_p.second;
-        int y = adj_p.first;
-
+      auto f = [&](int y, int x){
         if (board[y][x] == OTHER(active_player)) {
 
           int dx = x - move.second;
@@ -69,7 +66,9 @@ struct BoardState {
             }
           }
         }
-      }
+      };
+
+      map_adjacent(move.first, move.second, f);
     }
 
     active_player = OTHER(active_player);
@@ -77,14 +76,13 @@ struct BoardState {
 
   std::vector<Point> moves() {
     std::vector<Point> m;
+    m.reserve(60);
   
     for (int i = 0; i < 8; ++i) {
       for (int j = 0; j < 8; ++j) {
         if (board[i][j] == active_player) {
-          for (auto adj_p : adjacent(i, j)) {
-            int x = adj_p.second;
-            int y = adj_p.first;
 
+          auto f = [&](int y, int x){
             if (board[y][x] == OTHER(active_player)) {
 
               int dx = x - j;
@@ -108,7 +106,9 @@ struct BoardState {
                 }
               }
             }
-          }
+          };
+
+          map_adjacent(i, j, f);
         }
       }
     }

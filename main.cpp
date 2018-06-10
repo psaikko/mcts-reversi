@@ -289,7 +289,7 @@ int main(int argc, char ** argv) {
 
   using namespace std::placeholders;
 
-  srand(time(0));
+  srand(10101010);
 
   int w_wins = 0;
   int b_wins = 0;
@@ -315,7 +315,7 @@ int main(int argc, char ** argv) {
   move_func minimax_sampling = bind(minimax_move, _1, eval_sampling_10, 3);
   move_func minimax_pieces = bind(minimax_move, _1, eval_pieces, 3);
 
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 1; ++i) {
 
     BoardState state;
 
