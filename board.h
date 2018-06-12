@@ -34,7 +34,7 @@ struct BoardState {
     board[r][c] = player;
   }
 
-  void apply(Point move) {
+  void apply(const Point move) {
     if (move == PASS) {
       passed = true;
     } else {

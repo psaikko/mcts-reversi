@@ -118,7 +118,7 @@ void assert_list_contents(vector<Point> v1, vector<Point> v2) {
 
   assert(v1.size() == v2.size());
 
-  for (int i = 0; i < v1.size(); i++)
+  for (size_t i = 0; i < v1.size(); i++)
     assert(v1[i] == v2[i]);
 }
 

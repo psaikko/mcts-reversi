@@ -59,7 +59,7 @@ std::vector<Point> adjacent(int y, int x) {
   if (y == (BOARD_H - 1) && x == 0)
     return { {y - 1, x}, {y - 1, x + 1}, {y, x + 1} };
 
-  if (y == (BOARD_H - 1) && x == (BOARD_W - 1))
+  assert(y == (BOARD_H - 1) && x == (BOARD_W - 1));
     return { {y - 1, x}, {y - 1, x - 1}, {y, x - 1} };
 
 }

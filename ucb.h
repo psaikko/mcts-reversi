@@ -20,12 +20,12 @@ int ucb1_move(BoardState *state, int n_trials) {
   vector<double> T(valid_moves.size());
   vector<double> N(valid_moves.size());
 
-  for (int trial = 0; trial < n_trials*valid_moves.size(); ++trial) {
+  for (size_t trial = 0; trial < n_trials*valid_moves.size(); ++trial) {
     // choose j with max x_j + sqrt((2 * ln n) / n_j)
     int max_j = -1;
     double max_val = -1;
 
-    for (int j = 0; j < valid_moves.size(); ++j) {
+    for (size_t j = 0; j < valid_moves.size(); ++j) {
       if (N[j] == 0) {
         max_j = j;
         break;
@@ -51,7 +51,7 @@ int ucb1_move(BoardState *state, int n_trials) {
 
 
   printf("UCB1 ");
-  for (int i = 0; i < valid_moves.size(); ++i) {
+  for (size_t i = 0; i < valid_moves.size(); ++i) {
 
     printf("%.2f ", N[i] ? T[i] / N[i] : 0.0);
 

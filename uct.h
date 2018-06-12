@@ -107,7 +107,7 @@ struct uct_node {
       j = -1;
       double max_val = -1;
 
-      for (int i = 0; i < valid_moves.size(); ++i) {
+      for (unsigned i = 0; i < valid_moves.size(); ++i) {
         assert(N[i] != 0);
 
         double c = 1;
@@ -146,8 +146,6 @@ bool uct_move(BoardState *state, int n_trials) {
     state->apply(PASS);
     return false;
   }
-
-  int player = state->active_player;
 
   BoardState * root_state = new BoardState(*state);
   uct_node root_node(root_state);
