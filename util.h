@@ -21,7 +21,7 @@ const Point PASS = {-1,-1};
 #define BOARD_W 8
 #define BOARD_H 8
 
-#define OTHER(p) ((p == WHITE) ? BLACK : WHITE)
+#define OTHER(p) (3 - (p))
 
 #define BOUNDS(y, x) ((y >= 0 && y < BOARD_H) && ((x >= 0 && x < BOARD_W)))
 
