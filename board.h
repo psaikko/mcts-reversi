@@ -144,4 +144,24 @@ struct BoardState {
       printf("\n\n");
     }
   }
+
+  int winner() {
+    assert(passed);
+
+    int w_score = 0;
+    int b_score = 0;
+
+    for (int i = 0; i < 8; ++i) {
+      for (int j = 0; j < 8; ++j) {
+        if (board[i][j] == WHITE)
+          w_score++;
+        else if (board[i][j] == BLACK)
+          b_score++;
+      }
+    }
+
+    if (w_score > b_score) return WHITE;
+    if (w_score < b_score) return BLACK;
+    return EMPTY;
+  }
 };

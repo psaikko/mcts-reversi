@@ -96,3 +96,38 @@ bool io_move(BoardState *state) {
     return true;
   }
 }
+
+int simulate_random_game(BoardState *start_state) {
+
+  BoardState state(*start_state);
+
+  bool passed = false;
+
+  while (true) {
+    bool pass = !random_move(&state);
+
+    if (pass && passed) break;
+    passed = pass;
+  }
+
+  return state.winner();
+}
+
+int eval_pieces(BoardState *state, int player) {
+  int s = 0;
+  for (int i = 0; i < 8; ++i)
+    for (int j = 0; j < 8; ++j)
+      if (state->board[i][j] == player)
+        ++s;
+  return s;
+}
+
+int eval_sampling(BoardState *state, int player, int samples) {
+  int s = 0;
+  for (int i = 0; i < samples; ++i) {
+    if (simulate_random_game(state) == player) {
+      s++;
+    }
+  }
+  return s;
+}
