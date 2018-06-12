@@ -65,8 +65,7 @@ std::vector<Point> adjacent(int y, int x) {
 }
 
 template<typename T>
-void map_adjacent(int y, int x, T f) {
-
+inline void map_adjacent(const int y, const int x, T f) {
 
   if (y > 0) {
     f(y - 1, x);
@@ -84,34 +83,3 @@ void map_adjacent(int y, int x, T f) {
 
   if (x < 7) f(y, x + 1);
 }
-
-/*
-std::vector<Point> adjacent(int y, int x) {
-  std::vector<Point> adj;
-  adj.reserve(8);
-
-  if (y > 0) {
-    adj.emplace_back(y - 1, x);
-    if (x > 0)
-      adj.emplace_back(y - 1, x - 1);
-    if (x < 7)
-      adj.emplace_back(y - 1, x + 1);
-  } 
-
-  if (y < 7) {
-    adj.emplace_back(y + 1, x);
-    if (x > 0)
-      adj.emplace_back(y + 1, x - 1);
-    if (x < 7)
-      adj.emplace_back(y + 1, x + 1);
-  }
-
-  if (x > 0)
-    adj.emplace_back(y, x - 1);
-
-  if (x < 7)
-    adj.emplace_back(y, x + 1);
-
-  return std::move(adj);
-}
-*/

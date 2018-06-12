@@ -43,7 +43,7 @@ int ucb1_move(BoardState *state, int n_trials) {
     next_state.apply(valid_moves[max_j]);
 
     N[max_j] += 1;
-    T[max_j] += simulate_random_game(&next_state) == player;
+    T[max_j] += rollout_game(random_move, &next_state) == player;
   }
 
   Point best_move;

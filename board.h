@@ -26,6 +26,14 @@ struct BoardState {
     std::copy(*other.board, other.board[7]+8, *board);
   }
 
+  inline int get(const int r, const int c) {
+    return board[r][c];
+  }
+
+  inline void set(const int r, const int c, const int player) {
+    board[r][c] = player;
+  }
+
   void apply(Point move) {
     if (move == PASS) {
       passed = true;
@@ -92,13 +100,9 @@ struct BoardState {
                 x += dx;
                 y += dy;
 
-                if (!BOUNDS(y, x)) {
-                  break;
-                }
+                if (!BOUNDS(y, x)) break;
 
-                if (board[y][x] == active_player) {
-                  break;
-                }
+                if (board[y][x] == active_player) break;
 
                 if (board[y][x] == EMPTY) {
                   m.emplace_back(y, x);

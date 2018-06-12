@@ -102,7 +102,7 @@ struct uct_node {
 
       // rollout from j
       ++ uct_rollouts;
-      res = simulate_random_game(node_children[j]->state);
+      res = rollout_game(random_move, node_children[j]->state);
     } else {
       j = -1;
       double max_val = -1;

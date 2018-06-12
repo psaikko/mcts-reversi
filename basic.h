@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <functional>
 
 #include "util.h"
 #include "board.h"
@@ -97,14 +98,15 @@ bool io_move(BoardState *state) {
   }
 }
 
-int simulate_random_game(BoardState *start_state) {
+template<typename T>
+int rollout_game(const T move_policy_f, BoardState *start_state) {
 
   BoardState state(*start_state);
 
   bool passed = false;
 
   while (true) {
-    bool pass = !random_move(&state);
+    bool pass = !move_policy_f(&state);
 
     if (pass && passed) break;
     passed = pass;
@@ -125,7 +127,7 @@ int eval_pieces(BoardState *state, int player) {
 int eval_sampling(BoardState *state, int player, int samples) {
   int s = 0;
   for (int i = 0; i < samples; ++i) {
-    if (simulate_random_game(state) == player) {
+    if (rollout_game(random_move, state) == player) {
       s++;
     }
   }
