@@ -3,9 +3,11 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
+#include <limits>
 
 #include "util.h"
 #include "board.h"
+
 
 bool greedy_move(BoardState *state, eval_func eval) {
   auto valid_moves = state->moves();
@@ -18,7 +20,7 @@ bool greedy_move(BoardState *state, eval_func eval) {
   int player = state->active_player;
 
   Point best_move;
-  int best_score = -1;
+  int best_score = std::numeric_limits<int>::min();
 
   for (auto move : valid_moves) {
     BoardState next_state(*state);
@@ -68,10 +70,13 @@ bool io_move(BoardState *state) {
     using namespace std;
 
     string cmd;
+    cout << "Enter move: ";
     cin >> cmd;
 
+    if (cin.eof()) exit(0);
+
     if (cmd.size() != 2) {
-      cout << "bad command" << endl;
+      cout << "Bad command" << endl;
       continue;
     }        
 
@@ -79,20 +84,18 @@ bool io_move(BoardState *state) {
     int col = int(cmd[0] - 'a');
 
     if (!BOUNDS(row, col)) {
-      cout << "out of bounds" << endl;
+      cout << "Out of bounds" << endl;
       continue;
     }
 
     Point move(row, col);
 
     if (std::find(valid_moves.begin(), valid_moves.end(), move) == valid_moves.end()) {
-      cout << "invalid move" << endl;
+      cout << "Invalid move" << endl;
       continue;
     }
 
     state->apply(move);
-
-    state->print();
 
     return true;
   }
@@ -121,6 +124,15 @@ int eval_pieces(BoardState *state, int player) {
     for (int j = 0; j < 8; ++j)
       if (state->board[i][j] == player)
         ++s;
+  return s;
+}
+
+int eval_inv_pieces(BoardState *state, int player) {
+  int s = 0;
+  for (int i = 0; i < 8; ++i)
+    for (int j = 0; j < 8; ++j)
+      if (state->board[i][j] == player)
+        --s;
   return s;
 }
 

@@ -67,6 +67,18 @@ std::vector<Point> adjacent(int y, int x) {
 template<typename T>
 inline void map_adjacent(const int y, const int x, T f) {
 
+  if (y > 0 && y < (BOARD_H - 1) && x > 0 && x < (BOARD_W - 1)) {
+    f(y - 1, x);
+    f(y - 1, x - 1);
+    f(y - 1, x + 1);
+    f(y, x + 1);
+    f(y, x - 1);
+    f(y + 1, x);
+    f(y + 1, x - 1);
+    f(y + 1, x + 1);
+    return;
+  }
+
   if (y > 0) {
     f(y - 1, x);
     if (x > 0) f(y - 1, x - 1);

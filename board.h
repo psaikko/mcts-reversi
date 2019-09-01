@@ -126,23 +126,23 @@ struct BoardState {
 
     printf(" ");
     for (int i = 0; i < 8; ++i)
-      printf(" %c", 'a' + i);
+      printf("  %c", 'a' + i);
     printf("\n\n");
 
     for (int i = 0; i < 8; ++i) {
       printf("%d", i+1);
       for (int j = 0; j < 8; ++j) {
         if (board[i][j] == WHITE)
-          printf(" \u25CB");
+          printf("  \u25CB");
         else if (board[i][j] == BLACK)
-          printf(" \u25CF");
+          printf("  \u25CF");
         else {
           Point x(i, j);
 
           if (std::find(valid_moves.begin(), valid_moves.end(), x) != valid_moves.end())
-            printf(" _");
+            printf("  _");
           else 
-            printf(" .");
+            printf("  .");
         }
       }
       printf("\n\n");

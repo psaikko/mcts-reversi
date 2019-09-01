@@ -13,67 +13,82 @@
 #include "ucb.h"
 
 using namespace std;
+using namespace std::placeholders;
+
+// board evaluation functions
+eval_func eval_sampling_10 = bind(eval_sampling, _1, _2, 10);
+eval_func eval_sampling_100 = bind(eval_sampling, _1, _2, 100);
+eval_func eval_sampling_1000 = bind(eval_sampling, _1, _2, 1000);
+// eval_pieces
+// eval_inv_pieces
+
+move_func strategies[] = {
+  io_move, // player
+  random_move, // random
+  bind(greedy_move, _1, eval_pieces), // greedy 
+  bind(greedy_move, _1, eval_inv_pieces), // generous
+  bind(greedy_move, _1, eval_sampling_10), // greedy with random sampling 
+  bind(greedy_move, _1, eval_sampling_100),  
+  bind(greedy_move, _1, eval_sampling_1000),
+  bind(uct_move, _1, 10), // UCT with various amounts of sampling 
+  bind(uct_move, _1, 100),
+  bind(uct_move, _1, 1000),
+  bind(ucb1_move, _1, 10), // UCB1 with various amounts of sampling 
+  bind(ucb1_move, _1, 100),
+  bind(ucb1_move, _1, 1000),
+  bind(minimax_move, _1, eval_sampling_10, 3), // Minimax by sampling
+  bind(minimax_move, _1, eval_pieces, 3) // Minimax by piece count
+};
 
 int main(int argc, char ** argv) {
 
-  using namespace std::placeholders;
-
   srand(10101010);
 
-  int w_wins = 0;
-  int b_wins = 0;
+  int p1_strategy = 0;
+  int p2_strategy = 1;
+  int rounds = 1;
+  bool print_states = false;
 
-  eval_func eval_sampling_1 = bind(eval_sampling, _1, _2, 1);
-  eval_func eval_sampling_10 = bind(eval_sampling, _1, _2, 10);
-  eval_func eval_sampling_100 = bind(eval_sampling, _1, _2, 100);
-  eval_func eval_sampling_1000 = bind(eval_sampling, _1, _2, 1000);
+  if (argc > 1) p1_strategy = stoi(argv[1]);
+  if (argc > 2) p2_strategy = stoi(argv[2]);
+  if (argc > 3) rounds = stoi(argv[3]);
+  if (argc > 4) print_states = string(argv[4]) != "0";
 
-  move_func greedy_sampling_10 = bind(greedy_move, _1, eval_sampling_10);
-  move_func greedy_sampling_100 = bind(greedy_move, _1, eval_sampling_100);
-  move_func greedy_sampling_1000 = bind(greedy_move, _1, eval_sampling_1000);
+  int p1_wins = 0;
+  int p2_wins = 0;
 
-  move_func uct_move_10 = bind(uct_move, _1, 10);
-  move_func uct_move_1000 = bind(uct_move, _1, 1000);
-
-  move_func ucb1_move_10 = bind(ucb1_move, _1, 10);
-  move_func ucb1_move_100 = bind(ucb1_move, _1, 100);
-  move_func ucb1_move_1000 = bind(ucb1_move, _1, 1000);
-
-  move_func greedy_pieces = bind(greedy_move, _1, eval_pieces);
-
-  move_func minimax_sampling = bind(minimax_move, _1, eval_sampling_10, 3);
-  move_func minimax_pieces = bind(minimax_move, _1, eval_pieces, 3);
-
-  for (int i = 0; i < 1; ++i) {
+  for (int i = 0; i < rounds; ++i) {
 
     BoardState state;
 
-    move_func player_a = uct_move_1000;   // black
-    move_func player_b = minimax_sampling;
+    move_func player_1 = strategies[p1_strategy];   // black
+    move_func player_2 = strategies[p2_strategy];
 
     bool passed = false;
 
     while (true) {
 
-      state.print();
+      if (print_states) state.print();
 
-      bool pass = !player_a(&state);
+      bool pass = !player_1(&state);
 
       if (pass && passed) break;
       passed = pass;
       
-      swap(player_a, player_b);
+      swap(player_1, player_2);
     }
 
     int w_score = eval_pieces(&state, WHITE);
     int b_score = eval_pieces(&state, BLACK);
 
-    if (w_score > b_score) w_wins++;
-    if (w_score < b_score) b_wins++;
+    if (w_score > b_score) p1_wins++;
+    if (w_score < b_score) p2_wins++;
 
-    cout << w_score << " " << b_score << endl;
+    cout << "Player 1 " << b_score << "\nPlayer 2 " << w_score << endl;
   }
 
-  cout << "W " << w_wins << endl;
-  cout << "B " << b_wins << endl;
+  if (rounds > 1) {
+    cout << "1 " << p1_wins << endl;
+    cout << "2 " << p2_wins << endl;
+  }
 }
