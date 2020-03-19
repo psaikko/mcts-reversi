@@ -37,7 +37,9 @@ move_func strategies[] = {
   bind(ucb1_move, _1, 100),
   bind(ucb1_move, _1, 1000),
   bind(minimax_move, _1, eval_sampling_10, 3), // Minimax by sampling
-  bind(minimax_move, _1, eval_pieces, 3) // Minimax by piece count
+  bind(minimax_move, _1, eval_pieces, 3), // Minimax by piece count
+  bind(minimax_move, _1, eval_pieces, 4), // Minimax by piece count
+  bind(minimax_move, _1, eval_pieces, 5) // Minimax by piece count
 };
 
 int main(int argc, char ** argv) {
