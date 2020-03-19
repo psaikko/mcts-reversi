@@ -18,8 +18,8 @@ const Point PASS = {-1,-1};
 #define BLACK 1
 #define WHITE 2
 
-#define BOARD_W 6
-#define BOARD_H 6
+#define BOARD_W 8
+#define BOARD_H 8
 
 #define OTHER(p) (3 - (p))
 

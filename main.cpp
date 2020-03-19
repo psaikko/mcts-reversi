@@ -81,14 +81,15 @@ int main(int argc, char ** argv) {
     int w_score = eval_pieces(&state, WHITE);
     int b_score = eval_pieces(&state, BLACK);
 
-    if (w_score > b_score) p1_wins++;
-    if (w_score < b_score) p2_wins++;
+    if (w_score > b_score) p2_wins++;
+    if (w_score < b_score) p1_wins++;
 
-    cout << "Player 1 " << b_score << "\nPlayer 2 " << w_score << endl;
+    cout << "Player 1 score: " << b_score << endl;
+    cout << "Player 2 score: " << w_score << endl;
   }
 
   if (rounds > 1) {
-    cout << "1 " << p1_wins << endl;
-    cout << "2 " << p2_wins << endl;
+    cout << "Player 1 wins: " << p1_wins << endl;
+    cout << "Player 2 wins: " << p2_wins << endl;
   }
 }
