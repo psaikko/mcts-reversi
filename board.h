@@ -6,24 +6,27 @@
 
 struct BoardState {
 
-  int board[8][8];
+  int board[BOARD_H][BOARD_W];
   int active_player;
   bool passed;
 
   BoardState() : active_player(BLACK) {
-    std::fill(*board, board[7]+8, 0);
+    std::fill(*board, board[BOARD_H - 1]+BOARD_W, 0);
     passed = false;
 
-    board[3][3] = WHITE;
-    board[3][4] = BLACK;
-    board[4][3] = BLACK;
-    board[4][4] = WHITE;
+    int mid_h = BOARD_H / 2 - 1;
+    int mid_w = BOARD_W / 2 - 1;
+
+    board[mid_h][mid_w] = WHITE;
+    board[mid_h][mid_w+1] = BLACK;
+    board[mid_h+1][mid_w] = BLACK;
+    board[mid_h+1][mid_w+1] = WHITE;
   }
 
   BoardState(const BoardState & other) {
     active_player = other.active_player;
     passed = other.passed;
-    std::copy(*other.board, other.board[7]+8, *board);
+    std::copy(*other.board, other.board[BOARD_H - 1]+BOARD_W, *board);
   }
 
   inline int get(const int r, const int c) {
@@ -86,8 +89,8 @@ struct BoardState {
     std::vector<Point> m;
     m.reserve(60);
   
-    for (int i = 0; i < 8; ++i) {
-      for (int j = 0; j < 8; ++j) {
+    for (int i = 0; i < BOARD_H; ++i) {
+      for (int j = 0; j < BOARD_W; ++j) {
         if (board[i][j] == active_player) {
 
           auto f = [&](int y, int x){
@@ -125,13 +128,13 @@ struct BoardState {
     auto valid_moves = moves();
 
     printf(" ");
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < BOARD_W; ++i)
       printf("  %c", 'a' + i);
     printf("\n\n");
 
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < BOARD_H; ++i) {
       printf("%d", i+1);
-      for (int j = 0; j < 8; ++j) {
+      for (int j = 0; j < BOARD_W; ++j) {
         if (board[i][j] == WHITE)
           printf("  \u25CB");
         else if (board[i][j] == BLACK)
@@ -155,8 +158,8 @@ struct BoardState {
     int w_score = 0;
     int b_score = 0;
 
-    for (int i = 0; i < 8; ++i) {
-      for (int j = 0; j < 8; ++j) {
+    for (int i = 0; i < BOARD_H; ++i) {
+      for (int j = 0; j < BOARD_W; ++j) {
         if (board[i][j] == WHITE)
           w_score++;
         else if (board[i][j] == BLACK)

@@ -120,8 +120,8 @@ int rollout_game(const T move_policy_f, BoardState *start_state) {
 
 int eval_pieces(BoardState *state, int player) {
   int s = 0;
-  for (int i = 0; i < 8; ++i)
-    for (int j = 0; j < 8; ++j)
+  for (int i = 0; i < BOARD_H; ++i)
+    for (int j = 0; j < BOARD_W; ++j)
       if (state->board[i][j] == player)
         ++s;
   return s;
@@ -129,8 +129,8 @@ int eval_pieces(BoardState *state, int player) {
 
 int eval_inv_pieces(BoardState *state, int player) {
   int s = 0;
-  for (int i = 0; i < 8; ++i)
-    for (int j = 0; j < 8; ++j)
+  for (int i = 0; i < BOARD_H; ++i)
+    for (int j = 0; j < BOARD_W; ++j)
       if (state->board[i][j] == player)
         --s;
   return s;

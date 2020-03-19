@@ -18,8 +18,8 @@ const Point PASS = {-1,-1};
 #define BLACK 1
 #define WHITE 2
 
-#define BOARD_W 8
-#define BOARD_H 8
+#define BOARD_W 6
+#define BOARD_H 6
 
 #define OTHER(p) (3 - (p))
 
@@ -82,16 +82,16 @@ inline void map_adjacent(const int y, const int x, T f) {
   if (y > 0) {
     f(y - 1, x);
     if (x > 0) f(y - 1, x - 1);
-    if (x < 7) f(y - 1, x + 1);
+    if (x < (BOARD_W - 1)) f(y - 1, x + 1);
   } 
 
-  if (y < 7) {
+  if (y < (BOARD_H - 1)) {
     f(y + 1, x);
     if (x > 0) f(y + 1, x - 1);
-    if (x < 7) f(y + 1, x + 1);
+    if (x < (BOARD_W - 1)) f(y + 1, x + 1);
   }
 
   if (x > 0) f(y, x - 1);
 
-  if (x < 7) f(y, x + 1);
+  if (x < (BOARD_W - 1)) f(y, x + 1);
 }
