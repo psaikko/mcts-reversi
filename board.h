@@ -48,16 +48,14 @@ struct BoardState {
       auto f = [&](int y, int x){
         if (board[y][x] == OTHER(active_player)) {
 
-          int dx = x - move.second;
-          int dy = y - move.first;
+          const int dx = x - move.second;
+          const int dy = y - move.first;
 
           while (true) {
             x += dx;
             y += dy;
 
-            if (!BOUNDS(y, x)) {
-              break;
-            }
+            if (!BOUNDS(y, x)) break;
 
             if (board[y][x] == active_player) {
               while (true) {
@@ -85,7 +83,7 @@ struct BoardState {
     active_player = OTHER(active_player);
   }
 
-  std::vector<Point> moves() {
+  std::vector<Point> moves() const {
     std::vector<Point> m;
     m.reserve(60);
   
@@ -96,8 +94,8 @@ struct BoardState {
           auto f = [&](int y, int x){
             if (board[y][x] == OTHER(active_player)) {
 
-              int dx = x - j;
-              int dy = y - i;
+              const int dx = x - j;
+              const int dy = y - i;
 
               while (true) {
                 x += dx;
