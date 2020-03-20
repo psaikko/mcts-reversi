@@ -7,19 +7,19 @@ contestants = [
     (1,"Random"),
     (2,"Greedy"),
     (3,"Generous"),
-    (4,"Sampling greedy (10)"),
-    (5,"Sampling greedy (100)"),
- #   (6,"Sampling greedy (1000)"),
+    (4,"Uniform sampling (10)"),
+    (5,"Uniform sampling (100)"),
+ #   (6,"Uniform sampling (1000)"),
+    (10,"UCB1 (10)"),
+    (11,"UCB1 (100)"),
     (7,"UCT (10)"),
     (8,"UCT (100)"),
  #   (9,"UCT (1000)"),
-    (10,"UCB1 (10)"),
-    (11,"UCB1 (100)"),
  #   (12,"UCB1 (1000)"),
  #   (13,"MiniMax sampling (10)"),
     (14,"MiniMax (3)"),
-    (14,"MiniMax (4)"),
-    (14,"MiniMax (5)")
+    (15,"MiniMax (4)"),
+    (16,"MiniMax (5)")
 ]
 
 match_rounds = 100
