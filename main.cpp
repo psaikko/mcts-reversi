@@ -43,7 +43,6 @@ move_func strategies[] = {
 };
 
 int main(int argc, char ** argv) {
-
   srand(10101010);
 
   int p1_strategy = 0;
@@ -60,21 +59,21 @@ int main(int argc, char ** argv) {
   int p2_wins = 0;
 
   for (int i = 0; i < rounds; ++i) {
-
     BoardState state;
 
-    move_func player_1 = strategies[p1_strategy];   // black
+    move_func player_1 = strategies[p1_strategy]; // black
     move_func player_2 = strategies[p2_strategy];
 
     bool passed = false;
-
     while (true) {
-
-      if (print_states) state.print();
-
+      if (print_states) {
+        state.print();
+      }
+      
       bool pass = !player_1(&state);
-
-      if (pass && passed) break;
+      if (pass && passed) {
+        break;
+      }
       passed = pass;
       
       swap(player_1, player_2);

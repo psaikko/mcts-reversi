@@ -7,15 +7,13 @@
 #include "util.h"
 
 int ucb1_move(BoardState *state, int n_trials) {
-
   auto valid_moves = state->moves();
+  int player = state->active_player;
 
   if (valid_moves.size() == 0) {
     state->apply(PASS);
     return false;
   }
-
-  int player = state->active_player;
 
   vector<double> T(valid_moves.size());
   vector<double> N(valid_moves.size());
@@ -36,7 +34,6 @@ int ucb1_move(BoardState *state, int n_trials) {
         max_j = j;
       }
     }
-
     assert(max_j != -1);
 
     BoardState next_state(*state);
@@ -48,20 +45,12 @@ int ucb1_move(BoardState *state, int n_trials) {
 
   Point best_move;
   double best_score = -1;
-
-
-  printf("UCB1 ");
   for (size_t i = 0; i < valid_moves.size(); ++i) {
-
-    printf("%.2f ", N[i] ? T[i] / N[i] : 0.0);
-
     if (N[i] && T[i] / N[i] > best_score) {
       best_score = T[i] / N[i];
       best_move = valid_moves[i];
     }
-  }  
-  printf("\n");
-
+  }
   state->apply(best_move);
 
   return true;

@@ -5,21 +5,14 @@
 #include "util.h"
 #include "board.h"
 
-int minimax_nodes;
-int minimax_leaves;
-int minimax_pruned;
-
 int min_move(BoardState *state, int d, int player, int alpha, eval_func eval);
 
 int max_move(BoardState *state, int d, int player, int beta, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (d == 0) {
-    minimax_leaves++;
     return eval(state, player);
   }
-
-  minimax_nodes++;
 
   if (valid_moves.size() == 0) {
     BoardState next_state(*state);
@@ -35,9 +28,7 @@ int max_move(BoardState *state, int d, int player, int beta, eval_func eval) {
     next_state.apply(move);
 
     int score = min_move(&next_state, d - 1, player, best_score, eval);
-
     if (score > beta) {
-      ++minimax_pruned;
       best_score = beta;
       break;
     }
@@ -55,11 +46,8 @@ int min_move(BoardState *state, int d, int player, int alpha, eval_func eval) {
   auto valid_moves = state->moves();
 
   if (d == 0) {
-    minimax_leaves++;
     return eval(state, player);
   }
-
-  minimax_nodes++;
 
   if (valid_moves.size() == 0) {
     BoardState next_state(*state);
@@ -75,9 +63,7 @@ int min_move(BoardState *state, int d, int player, int alpha, eval_func eval) {
     next_state.apply(move);
 
     int score = max_move(&next_state, d - 1, player, best_score, eval);
-
     if (score < alpha) {
-      ++minimax_pruned;
       best_score = alpha;
       break;
     }
@@ -94,10 +80,6 @@ int min_move(BoardState *state, int d, int player, int alpha, eval_func eval) {
 bool minimax_move(BoardState *state, eval_func eval, int max_depth) {
   auto valid_moves = state->moves();
 
-  minimax_nodes = 0;
-  minimax_leaves = 0;
-  minimax_pruned = 0;
-
   if (valid_moves.size() == 0) {
     printf("pass\n");
     state->apply(PASS);
@@ -113,17 +95,12 @@ bool minimax_move(BoardState *state, eval_func eval, int max_depth) {
     next_state.apply(move);
 
     int score = min_move(&next_state, max_depth, player, best_score, eval);
-
     if (score > best_score) {
       best_move = move;
       best_score = score;
     }
   }
-
   assert(best_score != -1);
-
-  printf("Minimax %d nodes (%d pruned), %d leaves evaluated\n", minimax_nodes, minimax_pruned, minimax_leaves);
-
   state->apply(best_move);
 
   return true;

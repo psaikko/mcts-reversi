@@ -55,7 +55,6 @@ bool random_move(BoardState *state) {
 }
 
 bool io_move(BoardState *state) {
-
   state->print();
 
   auto valid_moves = state->moves();
@@ -103,7 +102,6 @@ bool io_move(BoardState *state) {
 
 template<typename T>
 int rollout_game(const T move_policy_f, BoardState *start_state) {
-
   BoardState state(*start_state);
 
   bool passed = false;

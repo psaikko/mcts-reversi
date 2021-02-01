@@ -11,12 +11,7 @@
 
 using namespace std;
 
-int uct_nodes;
-int uct_visits;
-int uct_rollouts;
-
-struct uct_node {
-
+struct TreeNode {
   int n_visited;
   int n_moves;
   
@@ -24,16 +19,11 @@ struct uct_node {
   vector<double> N;
 
   vector<Point> valid_moves;
-  vector<uct_node*> node_children;
-
+  vector<TreeNode*> node_children;
+  TreeNode* pass_node;
   BoardState *state;
 
-  uct_node* pass_node;
-
-  uct_node(BoardState *state) : state(state), pass_node(NULL) {
-
-    ++ uct_nodes;
-
+  TreeNode(BoardState *state) : pass_node(NULL), state(state) {
     valid_moves = state->moves();
     n_moves = valid_moves.size();
     n_visited = 0;
@@ -44,124 +34,96 @@ struct uct_node {
     node_children.resize(n_moves);
   }
 
-  ~uct_node() {
+  ~TreeNode() {
     delete state;
     for (auto child : node_children)
       if (child) delete child;
     if (pass_node) delete pass_node;
   }
 
-  Point get_best_move() {
-
+  Point select_best_move() {
     double best_score = -1;
     Point best_move;
 
-    printf("UCT select");
-
     for (int i = 0; i < n_moves; ++i) {
       assert(N[i] != 0);
-      printf(" %.2f", T[i] / N[i]);
       if (T[i] / N[i] > best_score) {
         best_score = T[i] / N[i];
         best_move = valid_moves[i];
       }
     }
-    printf("\n");
 
     assert(best_score != -1);
     return best_move;
   }
 
   int play() {
-
-    ++ uct_visits;
-
-    int res = -1;
-    int j = -1;
+    int winner = -1;
+    int next_move = -1;
 
     if (n_moves == 0) {
       if (state->passed) {
         return state->winner();
       }
-
       if (!pass_node) {
         BoardState *pass_state = new BoardState(*state);
         pass_state->apply(PASS);
-        pass_node = new uct_node(pass_state);
+        pass_node = new TreeNode(pass_state);
       }
-
       return pass_node->play();
     }
 
     if (n_visited < n_moves) {
-      j = n_visited++;
+      next_move = n_visited++;
+      BoardState *next_state = new BoardState(*state);
 
-      BoardState *j_state = new BoardState(*state);
-      j_state->apply(valid_moves[j]);
-      node_children[j] = new uct_node(j_state);
+      next_state->apply(valid_moves[next_move]);
+      node_children[next_move] = new TreeNode(next_state);
 
-      // rollout from j
-      ++ uct_rollouts;
-      res = rollout_game(random_move, node_children[j]->state);
+      // rollout from next_move
+      winner = rollout_game(random_move, node_children[next_move]->state);
     } else {
-      j = -1;
       double max_val = -1;
 
       for (unsigned i = 0; i < valid_moves.size(); ++i) {
         assert(N[i] != 0);
 
-        double c = 1;
-        double val = T[i] / N[i] + c * sqrt( ( 2 * log(n_visited) ) / N[i]);
-
+        double val = T[i] / N[i] + sqrt( ( 2 * log(n_visited) ) / N[i]);
         if (val > max_val) {
           max_val = val;
-          j = i;
+          next_move = i;
         }
       }
 
-      assert(j != -1);
-      // play from j
-      res = node_children[j]->play();
+      assert(next_move != -1);
+      // play from next_move
+      winner = node_children[next_move]->play();
     }
 
     // update statistics
-    N[j]++;
-    T[j] += (res == state->active_player);
+    N[next_move]++;
+    T[next_move] += (winner == state->active_player);
 
-    return res;
+    return winner;
   }
-
 };
 
 bool uct_move(BoardState *state, int n_trials) {
-
-  uct_rollouts = 0;
-  uct_nodes = 0;
-  uct_visits = 0;
-
   auto valid_moves = state->moves();
 
-  if (valid_moves.size() == 0) {
-    printf("pass\n");
-    state->apply(PASS);
-    return false;
-  }
-
   BoardState * root_state = new BoardState(*state);
-  uct_node root_node(root_state);
+  TreeNode root_node(root_state);
 
   if (root_node.n_moves) {
-
-    for (int i = 0; i < n_trials * root_node.n_moves; ++i)
+    for (int i = 0; i < n_trials * root_node.n_moves; ++i) {
       root_node.play();
-
-    Point move = root_node.get_best_move();
+    }
+    Point move = root_node.select_best_move();
     state->apply(move);
   } else {
     state->apply(PASS);
+    return false;
   }
-
-  printf("UCT nodes %d visits %d rollouts %d\n", uct_nodes, uct_visits, uct_rollouts);
 
   return true;
 }

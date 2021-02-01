@@ -122,7 +122,6 @@ struct BoardState {
   }
 
   void print() {
-
     auto valid_moves = moves();
 
     printf(" ");
